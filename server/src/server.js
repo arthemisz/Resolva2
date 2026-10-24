@@ -6,6 +6,8 @@ import { Product } from './models/Product.js';
 import { Transaction } from './models/Transaction.js';
 import { processAgentChat } from './services/agent.js';
 import { createProduct, findProducts, recordTransaction } from './services/tools.js';
+import authRoutes from './routes/authRoutes.js';
+import { authenticate } from './middleware/auth.js';
 
 dotenv.config();
 
@@ -22,20 +24,25 @@ const pluralizeUnit = (quantity, unit) => {
 app.use(cors());
 app.use(express.json());
 
-// 1. Get all products
-app.get('/api/products', async (req, res) => {
+// Auth routes (public)
+app.use('/api/auth', authRoutes);
+
+// 1. Get all products (now protected)
+app.get('/api/products', authenticate, async (req, res) => {
     try {
-        const products = await Product.find().sort({ code: 1 });
+        // Only get products for the authenticated user
+        const products = await Product.find({ userId: req.userId }).sort({ code: 1 });
         res.json(products);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-app.post('/api/products', async (req, res) => {
+app.post('/api/products', authenticate, async (req, res) => {
     try {
         const { name, quantity, unit } = req.body;
-        const result = await createProduct({ name, quantity, unit });
+        // Pass userId to createProduct
+        const result = await createProduct({ name, quantity, unit, userId: req.userId });
         if (result.error) {
             return res.status(400).json({ error: result.error });
         }
@@ -47,7 +54,7 @@ app.post('/api/products', async (req, res) => {
 });
 
 // 2. Chat with AI Agent
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', authenticate, async (req, res) => {
     try {
         const { message, history } = req.body;
         if (typeof message !== 'string' || !message.trim()) {
@@ -61,7 +68,9 @@ app.post('/api/chat', async (req, res) => {
             const [, quantityText, requestedUnit, requestedName] = addMatch;
             const name = requestedName.trim();
             const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Filter by userId
             const existingProduct = await Product.findOne({
+                userId: req.userId,
                 name: { $regex: escapedName, $options: 'i' }
             });
 
@@ -79,7 +88,8 @@ app.post('/api/chat', async (req, res) => {
             }
         }
 
-        const response = await processAgentChat(message, history || []);
+        // Pass userId to agent
+        const response = await processAgentChat(message, history || [], req.userId);
         res.json(response);
     } catch (error) {
         console.error('Agent chat error:', error);
@@ -88,14 +98,16 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // 3. Confirm Transaction (Direct endpoint for UI Confirm button)
-app.post('/api/transactions/confirm', async (req, res) => {
+app.post('/api/transactions/confirm', authenticate, async (req, res) => {
     try {
         const { productCode, transactionType, quantity } = req.body;
+        // Pass userId to recordTransaction
         const result = await recordTransaction({
             productCode,
             transactionType,
             quantity,
-            confirmed: true
+            confirmed: true,
+            userId: req.userId
         });
 
         if (result.error) {
@@ -108,9 +120,10 @@ app.post('/api/transactions/confirm', async (req, res) => {
 });
 
 // 4. Reopen Saved Transaction by ID
-app.get('/api/transactions/:id', async (req, res) => {
+app.get('/api/transactions/:id', authenticate, async (req, res) => {
     try {
-        const tx = await Transaction.findById(req.params.id);
+        // Only get transaction for authenticated user
+        const tx = await Transaction.findOne({ _id: req.params.id, userId: req.userId });
         if (!tx) {
             return res.status(404).json({ error: 'Transaction not found.' });
         }
@@ -121,9 +134,10 @@ app.get('/api/transactions/:id', async (req, res) => {
 });
 
 // 5. List Recent Transactions
-app.get('/api/transactions', async (req, res) => {
+app.get('/api/transactions', authenticate, async (req, res) => {
     try {
-        const list = await Transaction.find().sort({ createdAt: -1 }).limit(20);
+        // Only get transactions for authenticated user
+        const list = await Transaction.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(20);
         res.json(list);
     } catch (error) {
         res.status(500).json({ error: error.message });

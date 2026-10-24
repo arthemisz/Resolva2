@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: [true, 'User ID is required'],
+        index: true,
+    },
     name: {
         type: String,
         required: true,
@@ -9,7 +15,6 @@ const productSchema = new mongoose.Schema({
     code: {
         type: String,
         required: true,
-        unique: true,
         uppercase: true,
         trim: true,
     },
@@ -28,5 +33,8 @@ const productSchema = new mongoose.Schema({
 
 // Text index to support keyword search for find_products
 productSchema.index({ name: 'text', code: 'text' });
+
+// Compound index for unique code per user
+productSchema.index({ userId: 1, code: 1 }, { unique: true });
 
 export const Product = mongoose.model('Product', productSchema);

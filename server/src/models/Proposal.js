@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
 const proposalSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: [true, 'User ID is required'],
+        index: true,
+    },
     productCode: {
         type: String,
         required: true,

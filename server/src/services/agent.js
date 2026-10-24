@@ -71,7 +71,11 @@ Do you confirm this transaction?
 6. NEVER execute "record_transaction" until the user explicitly responds with confirmation (e.g., "yes", "confirm", "proceed").
 `;
 
-export async function processAgentChat(userMessage, chatHistory = []) {
+export async function processAgentChat(userMessage, chatHistory = [], userId) {
+    if (!userId) {
+        throw new Error('User ID is required for agent chat');
+    }
+
     const model = 'gemini-3.5-flash-lite';
 
     const chat = ai.chats.create({
@@ -105,12 +109,13 @@ export async function processAgentChat(userMessage, chatHistory = []) {
         lastToolUsed = call.name;
         let toolResult;
 
+        // Add userId to all tool calls
         if (call.name === 'find_products') {
-            toolResult = await findProducts(call.args);
+            toolResult = await findProducts({ ...call.args, userId });
         } else if (call.name === 'check_stock') {
-            toolResult = await checkStock(call.args);
+            toolResult = await checkStock({ ...call.args, userId });
         } else if (call.name === 'record_transaction') {
-            toolResult = await recordTransaction(call.args);
+            toolResult = await recordTransaction({ ...call.args, userId });
         }
         lastToolData = toolResult;
 

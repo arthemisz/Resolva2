@@ -2,11 +2,14 @@ import { Product } from '../models/Product.js';
 import { Transaction } from '../models/Transaction.js';
 import { randomBytes } from 'node:crypto';
 
-export async function createProduct({ name, quantity, unit = 'unit' }) {
+export async function createProduct({ name, quantity, unit = 'unit', userId }) {
     const productName = typeof name === 'string' ? name.trim() : '';
     const productUnit = typeof unit === 'string' ? unit.trim() : '';
     const qty = Number(quantity);
 
+    if (!userId) {
+        return { error: 'User ID is required.' };
+    }
     if (!productName) {
         return { error: 'Product name is required.' };
     }
@@ -19,6 +22,7 @@ export async function createProduct({ name, quantity, unit = 'unit' }) {
 
     const escapedName = productName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const existingProduct = await Product.findOne({
+        userId,
         name: { $regex: `^${escapedName}$`, $options: 'i' }
     });
     if (existingProduct) {
@@ -32,6 +36,7 @@ export async function createProduct({ name, quantity, unit = 'unit' }) {
         .slice(0, 12) || 'ITEM';
     const code = `${prefix}-${randomBytes(3).toString('hex').toUpperCase()}`;
     const product = await Product.create({
+        userId,
         name: productName,
         code,
         unit: productUnit,
@@ -50,12 +55,16 @@ export async function createProduct({ name, quantity, unit = 'unit' }) {
 }
 
 // Tool 1: find_products
-export async function findProducts({ searchPhrase }) {
+export async function findProducts({ searchPhrase, userId }) {
     if (!searchPhrase || typeof searchPhrase !== 'string') {
         return { error: 'Invalid search phrase provided.' };
     }
+    if (!userId) {
+        return { error: 'User ID is required.' };
+    }
 
     const matches = await Product.find({
+        userId,
         $or: [
             { name: { $regex: searchPhrase.trim(), $options: 'i' } },
             { code: { $regex: searchPhrase.trim(), $options: 'i' } }
@@ -77,10 +86,14 @@ export async function findProducts({ searchPhrase }) {
 }
 
 // Tool 2: check_stock
-export async function checkStock({ productCode }) {
+export async function checkStock({ productCode, userId }) {
     if (!productCode) return { error: 'Product code is required.' };
+    if (!userId) return { error: 'User ID is required.' };
 
-    const product = await Product.findOne({ code: productCode.toUpperCase() });
+    const product = await Product.findOne({ 
+        userId,
+        code: productCode.toUpperCase() 
+    });
     if (!product) {
         return { error: `Product with code ${productCode} not found in database.` };
     }
@@ -94,9 +107,12 @@ export async function checkStock({ productCode }) {
 }
 
 // Tool 3: record_transaction
-export async function recordTransaction({ productCode, transactionType, quantity, confirmed }) {
+export async function recordTransaction({ productCode, transactionType, quantity, confirmed, userId }) {
     if (!confirmed) {
         return { error: 'Cannot record transaction without explicit user confirmation.' };
+    }
+    if (!userId) {
+        return { error: 'User ID is required.' };
     }
 
     const code = productCode.toUpperCase();
@@ -111,7 +127,7 @@ export async function recordTransaction({ productCode, transactionType, quantity
         return { error: 'Transaction type must be sale, delivery, or return.' };
     }
 
-    const product = await Product.findOne({ code });
+    const product = await Product.findOne({ userId, code });
     if (!product) {
         return { error: `Product with code ${code} does not exist.` };
     }
@@ -131,7 +147,7 @@ export async function recordTransaction({ productCode, transactionType, quantity
     }
 
     // Atomic update to avoid race conditions and guard against negative stock
-    const updateQuery = { code };
+    const updateQuery = { userId, code };
     if (type === 'sale') {
         updateQuery.quantity = { $gte: qty };
     }
@@ -147,6 +163,7 @@ export async function recordTransaction({ productCode, transactionType, quantity
     }
 
     const transaction = await Transaction.create({
+        userId,
         productCode: code,
         type,
         quantity: qty,
