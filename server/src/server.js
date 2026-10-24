@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import { Product } from './models/Product.js';
 import { Transaction } from './models/Transaction.js';
+import { User } from './models/User.js';
 import { processAgentChat } from './services/agent.js';
 import { createProduct, findProducts, recordTransaction } from './services/tools.js';
 import authRoutes from './routes/authRoutes.js';
@@ -147,11 +148,22 @@ app.get('/api/transactions', authenticate, async (req, res) => {
 // 6. Seed Database Endpoint (PUBLIC - for initial setup only)
 app.post('/api/seed', async (req, res) => {
     try {
-        const { User } = await import('./models/User.js');
+        // Check if already seeded
+        const existingUser = await User.findOne({ email: 'demo@resolva.com' });
+        if (existingUser) {
+            const productCount = await Product.countDocuments({ userId: existingUser._id });
+            if (productCount >= 5) {
+                return res.json({
+                    success: true,
+                    message: 'Database already seeded!',
+                    demoUser: { email: 'demo@resolva.com', password: 'demo123' },
+                    productsExisting: productCount
+                });
+            }
+        }
         
-        // Create or find default demo user
-        let demoUser = await User.findOne({ email: 'demo@resolva.com' });
-        
+        // Create demo user
+        let demoUser = existingUser;
         if (!demoUser) {
             demoUser = await User.create({
                 name: 'Demo User',
@@ -191,7 +203,11 @@ app.post('/api/seed', async (req, res) => {
         });
     } catch (error) {
         console.error('Seed error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ 
+            success: false,
+            error: error.message,
+            stack: process.env.NODE_ENV === 'production' ? undefined : error.stack
+        });
     }
 });
 
