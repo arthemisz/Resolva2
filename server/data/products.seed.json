@@ -1,0 +1,32 @@
+[
+    {
+        "name": "SoftCare Soap",
+        "code": "SOAP-001",
+        "unit": "box",
+        "quantity": 12
+    },
+    {
+        "name": "SoftCare Soap Plus",
+        "code": "SOAP-002",
+        "unit": "box",
+        "quantity": 8
+    },
+    {
+        "name": "Golden Flour",
+        "code": "FLOUR-001",
+        "unit": "bag",
+        "quantity": 25
+    },
+    {
+        "name": "SunFresh Cooking Oil",
+        "code": "OIL-001",
+        "unit": "bottle",
+        "quantity": 18
+    },
+    {
+        "name": "PureDrop Water",
+        "code": "WATER-001",
+        "unit": "carton",
+        "quantity": 30
+    }
+]
