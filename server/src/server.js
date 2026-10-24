@@ -148,10 +148,17 @@ app.get('/api/transactions', authenticate, async (req, res) => {
 // 6. Seed Database Endpoint (PUBLIC - for initial setup only)
 app.post('/api/seed', async (req, res) => {
     try {
+        console.log('🌱 Starting seed process...');
+        
         // Check if already seeded
+        console.log('Checking for existing demo user...');
         const existingUser = await User.findOne({ email: 'demo@resolva.com' });
+        
         if (existingUser) {
+            console.log('Demo user found:', existingUser.email);
             const productCount = await Product.countDocuments({ userId: existingUser._id });
+            console.log('Existing products:', productCount);
+            
             if (productCount >= 5) {
                 return res.json({
                     success: true,
@@ -163,17 +170,21 @@ app.post('/api/seed', async (req, res) => {
         }
         
         // Create demo user
+        console.log('Creating or using demo user...');
         let demoUser = existingUser;
         if (!demoUser) {
+            console.log('Creating new demo user...');
             demoUser = await User.create({
                 name: 'Demo User',
                 email: 'demo@resolva.com',
                 password: 'demo123',
                 role: 'user'
             });
+            console.log('Demo user created:', demoUser._id);
         }
 
         // Seed products
+        console.log('Seeding products...');
         const seedProducts = [
             { name: "SoftCare Soap", code: "SOAP-001", unit: "box", quantity: 12 },
             { name: "SoftCare Soap Plus", code: "SOAP-002", unit: "box", quantity: 8 },
@@ -184,13 +195,18 @@ app.post('/api/seed', async (req, res) => {
 
         let seededCount = 0;
         for (const item of seedProducts) {
+            console.log(`Checking product: ${item.code}`);
             const existing = await Product.findOne({ code: item.code, userId: demoUser._id });
             if (!existing) {
                 await Product.create({ ...item, userId: demoUser._id });
                 seededCount++;
+                console.log(`✅ Created: ${item.code}`);
+            } else {
+                console.log(`⏭️  Already exists: ${item.code}`);
             }
         }
 
+        console.log('✅ Seed completed!');
         res.json({
             success: true,
             message: `Database seeded successfully!`,
@@ -202,13 +218,23 @@ app.post('/api/seed', async (req, res) => {
             totalProducts: seedProducts.length
         });
     } catch (error) {
-        console.error('Seed error:', error);
+        console.error('❌ Seed error:', error);
         res.status(500).json({ 
             success: false,
             error: error.message,
+            errorName: error.name,
             stack: process.env.NODE_ENV === 'production' ? undefined : error.stack
         });
     }
+});
+
+// 7. Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        mongodb: 'connected'
+    });
 });
 
 const start = async () => {
