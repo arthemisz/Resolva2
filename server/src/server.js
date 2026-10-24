@@ -145,7 +145,95 @@ app.get('/api/transactions', authenticate, async (req, res) => {
     }
 });
 
-// 6. Seed Database Endpoint (PUBLIC - for initial setup only)
+// 6. Quick setup endpoint - creates demo user with pre-hashed password
+app.post('/api/quick-setup', async (req, res) => {
+    try {
+        console.log('🚀 Quick setup starting...');
+        
+        // Check if demo user already exists
+        const existing = await User.findOne({ email: 'demo@resolva.com' });
+        if (existing) {
+            console.log('Demo user already exists');
+            // Just seed products
+            const seedProducts = [
+                { name: "SoftCare Soap", code: "SOAP-001", unit: "box", quantity: 12 },
+                { name: "SoftCare Soap Plus", code: "SOAP-002", unit: "box", quantity: 8 },
+                { name: "Golden Flour", code: "FLOUR-001", unit: "bag", quantity: 25 },
+                { name: "SunFresh Cooking Oil", code: "OIL-001", unit: "bottle", quantity: 18 },
+                { name: "PureDrop Water", code: "WATER-001", unit: "carton", quantity: 30 }
+            ];
+
+            let seededCount = 0;
+            for (const item of seedProducts) {
+                const existingProduct = await Product.findOne({ code: item.code, userId: existing._id });
+                if (!existingProduct) {
+                    await Product.create({ ...item, userId: existing._id });
+                    seededCount++;
+                }
+            }
+
+            return res.json({
+                success: true,
+                message: 'Setup complete! Demo user already existed.',
+                demoUser: { email: 'demo@resolva.com', password: 'demo123' },
+                productsSeeded: seededCount
+            });
+        }
+        
+        // Import bcrypt
+        const bcrypt = await import('bcryptjs');
+        
+        // Create user with pre-hashed password (bypassing pre-save hook)
+        const hashedPassword = await bcrypt.hash('demo123', 10);
+        console.log('Password hashed successfully');
+        
+        const demoUser = new User({
+            name: 'Demo User',
+            email: 'demo@resolva.com',
+            password: hashedPassword,
+            role: 'user'
+        });
+        
+        // Save without triggering pre-save hook
+        await demoUser.save({ validateBeforeSave: true });
+        console.log('✅ Demo user created');
+
+        // Seed products
+        const seedProducts = [
+            { name: "SoftCare Soap", code: "SOAP-001", unit: "box", quantity: 12 },
+            { name: "SoftCare Soap Plus", code: "SOAP-002", unit: "box", quantity: 8 },
+            { name: "Golden Flour", code: "FLOUR-001", unit: "bag", quantity: 25 },
+            { name: "SunFresh Cooking Oil", code: "OIL-001", unit: "bottle", quantity: 18 },
+            { name: "PureDrop Water", code: "WATER-001", unit: "carton", quantity: 30 }
+        ];
+
+        let seededCount = 0;
+        for (const item of seedProducts) {
+            await Product.create({ ...item, userId: demoUser._id });
+            seededCount++;
+        }
+
+        console.log('✅ Setup complete!');
+        res.json({
+            success: true,
+            message: 'Setup complete! You can now login.',
+            demoUser: {
+                email: 'demo@resolva.com',
+                password: 'demo123'
+            },
+            productsSeeded: seededCount
+        });
+    } catch (error) {
+        console.error('❌ Setup error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message,
+            errorName: error.name
+        });
+    }
+});
+
+// 7. Seed Database Endpoint (PUBLIC - for initial setup only)
 app.post('/api/seed', async (req, res) => {
     try {
         console.log('🌱 Starting seed process...');
