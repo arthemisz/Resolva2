@@ -144,6 +144,57 @@ app.get('/api/transactions', authenticate, async (req, res) => {
     }
 });
 
+// 6. Seed Database Endpoint (PUBLIC - for initial setup only)
+app.post('/api/seed', async (req, res) => {
+    try {
+        const { User } = await import('./models/User.js');
+        
+        // Create or find default demo user
+        let demoUser = await User.findOne({ email: 'demo@resolva.com' });
+        
+        if (!demoUser) {
+            demoUser = await User.create({
+                name: 'Demo User',
+                email: 'demo@resolva.com',
+                password: 'demo123',
+                role: 'user'
+            });
+        }
+
+        // Seed products
+        const seedProducts = [
+            { name: "SoftCare Soap", code: "SOAP-001", unit: "box", quantity: 12 },
+            { name: "SoftCare Soap Plus", code: "SOAP-002", unit: "box", quantity: 8 },
+            { name: "Golden Flour", code: "FLOUR-001", unit: "bag", quantity: 25 },
+            { name: "SunFresh Cooking Oil", code: "OIL-001", unit: "bottle", quantity: 18 },
+            { name: "PureDrop Water", code: "WATER-001", unit: "carton", quantity: 30 }
+        ];
+
+        let seededCount = 0;
+        for (const item of seedProducts) {
+            const existing = await Product.findOne({ code: item.code, userId: demoUser._id });
+            if (!existing) {
+                await Product.create({ ...item, userId: demoUser._id });
+                seededCount++;
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Database seeded successfully!`,
+            demoUser: {
+                email: 'demo@resolva.com',
+                password: 'demo123'
+            },
+            productsSeeded: seededCount,
+            totalProducts: seedProducts.length
+        });
+    } catch (error) {
+        console.error('Seed error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 const start = async () => {
     await connectDB();
     app.listen(PORT, () => {
