@@ -1,8 +1,12 @@
+import { getAuthHeaders } from './authApi.js';
+
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
 
 export const inventoryApi = {
   getProducts: async () => {
-    const res = await fetch(`${API_BASE}/products`);
+    const res = await fetch(`${API_BASE}/products`, {
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return res.json();
   },
@@ -10,7 +14,10 @@ export const inventoryApi = {
   createProduct: async (data) => {
     const res = await fetch(`${API_BASE}/products`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify(data),
     });
     if (!res.ok) {
@@ -21,13 +28,17 @@ export const inventoryApi = {
   },
 
   getTransactions: async () => {
-    const res = await fetch(`${API_BASE}/transactions`);
+    const res = await fetch(`${API_BASE}/transactions`, {
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return res.json();
   },
 
   getTransactionById: async (id) => {
-    const res = await fetch(`${API_BASE}/transactions/${id}`);
+    const res = await fetch(`${API_BASE}/transactions/${id}`, {
+      headers: getAuthHeaders(),
+    });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     return res.json();
   },
@@ -35,7 +46,10 @@ export const inventoryApi = {
   sendChatMessage: async (message, history = []) => {
     const res = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify({ message, history }),
     });
     if (!res.ok) {
@@ -48,7 +62,10 @@ export const inventoryApi = {
   confirmTransaction: async (data) => {
     const res = await fetch(`${API_BASE}/transactions/confirm`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify(data),
     });
     if (!res.ok) {
