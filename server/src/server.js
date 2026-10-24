@@ -180,8 +180,8 @@ app.post('/api/quick-setup', async (req, res) => {
             });
         }
         
-        // Import bcrypt
-        const bcrypt = await import('bcryptjs');
+        // Import bcrypt with default import
+        const bcrypt = (await import('bcryptjs')).default;
         
         // Create user with pre-hashed password (bypassing pre-save hook)
         const hashedPassword = await bcrypt.hash('demo123', 10);
