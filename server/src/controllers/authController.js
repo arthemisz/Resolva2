@@ -1,5 +1,6 @@
 import { User } from '../models/User.js';
 import { generateToken } from '../utils/jwt.js';
+import bcrypt from 'bcryptjs';
 
 /**
  * Register new user
@@ -30,25 +31,34 @@ export const register = async (req, res) => {
             });
         }
 
-        // Create new user
-        const user = await User.create({
+        // Hash password manually (bypass pre-save hook issues)
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new user directly in collection
+        const result = await User.collection.insertOne({
             name,
             email,
-            password, // Will be hashed by pre-save hook
+            password: hashedPassword,
+            role: 'user',
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
         });
 
+        const userId = result.insertedId;
+
         // Generate token
-        const token = generateToken(user._id);
+        const token = generateToken(userId);
 
         // Return user and token
         res.status(201).json({
             message: 'Registration successful!',
             token,
             user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
+                _id: userId,
+                name,
+                email,
+                role: 'user',
             },
         });
     } catch (error) {
