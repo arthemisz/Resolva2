@@ -183,20 +183,23 @@ app.post('/api/quick-setup', async (req, res) => {
         // Import bcrypt with default import
         const bcrypt = (await import('bcryptjs')).default;
         
-        // Create user with pre-hashed password (bypassing pre-save hook)
+        // Create user with pre-hashed password
         const hashedPassword = await bcrypt.hash('demo123', 10);
         console.log('Password hashed successfully');
         
-        const demoUser = new User({
+        // Insert directly into collection to bypass pre-save hook
+        const result = await User.collection.insertOne({
             name: 'Demo User',
             email: 'demo@resolva.com',
             password: hashedPassword,
-            role: 'user'
+            role: 'user',
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
         });
         
-        // Save without triggering pre-save hook
-        await demoUser.save({ validateBeforeSave: true });
-        console.log('✅ Demo user created');
+        const demoUserId = result.insertedId;
+        console.log('✅ Demo user created:', demoUserId);
 
         // Seed products
         const seedProducts = [
@@ -209,7 +212,7 @@ app.post('/api/quick-setup', async (req, res) => {
 
         let seededCount = 0;
         for (const item of seedProducts) {
-            await Product.create({ ...item, userId: demoUser._id });
+            await Product.create({ ...item, userId: demoUserId });
             seededCount++;
         }
 
