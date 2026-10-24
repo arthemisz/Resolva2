@@ -22,7 +22,7 @@ const seedDatabase = async () => {
             await Product.findOneAndUpdate(
                 { code: item.code },
                 { $setOnInsert: item }, // Keeps whatever live quantities exist in Atlas; only sets values if it is a brand new product
-                { upsert: true, new: true }
+                { upsert: true, returnDocument: 'after' }
             );
         }
 
