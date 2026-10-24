@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowDown, Terminal, Check } from 'lucide-react';
+import { ArrowDown, Play, Check } from 'lucide-react';
 import ModelViewer from '../common/ModelViewer';
 import { scrollToSection, scrollToBottom } from '../../utils/scroll';
 
@@ -42,8 +42,8 @@ export default function HeroSection() {
             onClick={() => scrollToSection('benchmark')}
             className="flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-white hover:bg-[#FAF9F6] text-[#14110F] border border-[#D3D1C8] text-xs sm:text-sm font-medium transition-colors cursor-pointer shadow-xs"
           >
-            <Terminal className="w-3.5 h-3.5 text-[#14110F]" />
-            <span>Try the benchmark</span>
+            <Play className="w-3.5 h-3.5 text-[#14110F]" />
+            <span>Watch the benchmark</span>
           </button>
 
           <button
