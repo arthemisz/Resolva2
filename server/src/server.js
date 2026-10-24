@@ -5,12 +5,19 @@ import { connectDB } from './config/db.js';
 import { Product } from './models/Product.js';
 import { Transaction } from './models/Transaction.js';
 import { processAgentChat } from './services/agent.js';
-import { recordTransaction } from './services/tools.js';
+import { createProduct, findProducts, recordTransaction } from './services/tools.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const pluralizeUnit = (quantity, unit) => {
+    if (quantity === 1 || unit.endsWith('s')) return unit;
+    if (/(x|ch|sh|z)$/.test(unit)) return `${unit}es`;
+    if (/[^aeiou]y$/.test(unit)) return `${unit.slice(0, -1)}ies`;
+    return `${unit}s`;
+};
 
 app.use(cors());
 app.use(express.json());
@@ -25,13 +32,53 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+app.post('/api/products', async (req, res) => {
+    try {
+        const { name, quantity, unit } = req.body;
+        const result = await createProduct({ name, quantity, unit });
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        res.status(201).json(result);
+    } catch (error) {
+        console.error('Create product error:', error);
+        res.status(500).json({ error: error.message || 'Could not create product.' });
+    }
+});
+
 // 2. Chat with AI Agent
 app.post('/api/chat', async (req, res) => {
     try {
         const { message, history } = req.body;
-        if (!message) {
+        if (typeof message !== 'string' || !message.trim()) {
             return res.status(400).json({ error: 'Message is required.' });
         }
+
+        const addMatch = message.match(
+            /^\s*(?:please\s+)?add\s+(\d+)\s+(?:(\S+)\s+of\s+)?(.+?)(?:\s+(?:to|into)\s+(?:the\s+)?(?:stock|inventory))?[.!?]*\s*$/i
+        );
+        if (addMatch) {
+            const [, quantityText, requestedUnit, requestedName] = addMatch;
+            const name = requestedName.trim();
+            const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const existingProduct = await Product.findOne({
+                name: { $regex: escapedName, $options: 'i' }
+            });
+
+            const quantity = Number(quantityText);
+            if (!existingProduct && Number.isSafeInteger(quantity) && quantity > 0 && name) {
+                const productProposal = {
+                    name,
+                    quantity,
+                    unit: requestedUnit || 'unit'
+                };
+                return res.json({
+                    reply: `"${name}" isn't in the inventory. Review the item below and choose Confirm to create it or Cancel to dismiss.`,
+                    productProposal
+                });
+            }
+        }
+
         const response = await processAgentChat(message, history || []);
         res.json(response);
     } catch (error) {

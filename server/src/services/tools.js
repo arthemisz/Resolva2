@@ -1,5 +1,53 @@
 import { Product } from '../models/Product.js';
 import { Transaction } from '../models/Transaction.js';
+import { randomBytes } from 'node:crypto';
+
+export async function createProduct({ name, quantity, unit = 'unit' }) {
+    const productName = typeof name === 'string' ? name.trim() : '';
+    const productUnit = typeof unit === 'string' ? unit.trim() : '';
+    const qty = Number(quantity);
+
+    if (!productName) {
+        return { error: 'Product name is required.' };
+    }
+    if (!['number', 'string'].includes(typeof quantity) || !Number.isSafeInteger(qty) || qty <= 0) {
+        return { error: 'Quantity must be a positive whole number.' };
+    }
+    if (!productUnit) {
+        return { error: 'Product unit is required.' };
+    }
+
+    const escapedName = productName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const existingProduct = await Product.findOne({
+        name: { $regex: `^${escapedName}$`, $options: 'i' }
+    });
+    if (existingProduct) {
+        return { error: `A product named "${existingProduct.name}" already exists.` };
+    }
+
+    const prefix = productName
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 12) || 'ITEM';
+    const code = `${prefix}-${randomBytes(3).toString('hex').toUpperCase()}`;
+    const product = await Product.create({
+        name: productName,
+        code,
+        unit: productUnit,
+        quantity: qty
+    });
+
+    return {
+        success: true,
+        product: {
+            name: product.name,
+            code: product.code,
+            unit: product.unit,
+            quantity: product.quantity
+        }
+    };
+}
 
 // Tool 1: find_products
 export async function findProducts({ searchPhrase }) {
