@@ -150,37 +150,40 @@ app.post('/api/seed', async (req, res) => {
     try {
         console.log('🌱 Starting seed process...');
         
-        // Check if already seeded
+        // Check if demo user exists
         console.log('Checking for existing demo user...');
-        const existingUser = await User.findOne({ email: 'demo@resolva.com' });
+        let demoUser = await User.findOne({ email: 'demo@resolva.com' });
         
-        if (existingUser) {
-            console.log('Demo user found:', existingUser.email);
-            const productCount = await Product.countDocuments({ userId: existingUser._id });
-            console.log('Existing products:', productCount);
-            
-            if (productCount >= 5) {
-                return res.json({
-                    success: true,
-                    message: 'Database already seeded!',
-                    demoUser: { email: 'demo@resolva.com', password: 'demo123' },
-                    productsExisting: productCount
-                });
-            }
+        if (!demoUser) {
+            console.log('Demo user not found. Please register via /api/auth/register first.');
+            return res.status(400).json({
+                success: false,
+                message: 'Please create a demo user first by registering at /api/auth/register with email: demo@resolva.com and password: demo123',
+                instructions: {
+                    method: 'POST',
+                    url: '/api/auth/register',
+                    body: {
+                        name: 'Demo User',
+                        email: 'demo@resolva.com',
+                        password: 'demo123'
+                    }
+                }
+            });
         }
         
-        // Create demo user
-        console.log('Creating or using demo user...');
-        let demoUser = existingUser;
-        if (!demoUser) {
-            console.log('Creating new demo user...');
-            demoUser = await User.create({
-                name: 'Demo User',
-                email: 'demo@resolva.com',
-                password: 'demo123',
-                role: 'user'
+        console.log('Demo user found:', demoUser.email);
+        
+        // Check existing products
+        const existingProducts = await Product.countDocuments({ userId: demoUser._id });
+        console.log('Existing products for demo user:', existingProducts);
+        
+        if (existingProducts >= 5) {
+            return res.json({
+                success: true,
+                message: 'Database already seeded!',
+                demoUser: { email: 'demo@resolva.com', password: 'demo123' },
+                productsExisting: existingProducts
             });
-            console.log('Demo user created:', demoUser._id);
         }
 
         // Seed products
@@ -223,7 +226,7 @@ app.post('/api/seed', async (req, res) => {
             success: false,
             error: error.message,
             errorName: error.name,
-            stack: process.env.NODE_ENV === 'production' ? undefined : error.stack
+            errorCode: error.code
         });
     }
 });
