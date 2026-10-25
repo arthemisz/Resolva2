@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import ModelViewer from '../components/common/ModelViewer';
 import BenchmarkSection from '../components/sections/BenchmarkSection';
+import FaqSection from '../components/sections/FaqSection';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -65,6 +66,9 @@ export default function LandingPage() {
 
       {/* Benchmark Section - Motion Graphics */}
       <BenchmarkSection />
+
+      {/* FAQ Section */}
+      <FaqSection />
 
       {/* Demo Section */}
       <section className="py-16 px-4 sm:px-8 max-w-3xl mx-auto w-full text-center">
