@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/authApi';
+import { ArrowLeft, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -38,29 +39,60 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        {/* Header */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to manage your inventory
-          </p>
-        </div>
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
+      <div className="max-w-md w-full space-y-6">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-sm text-[#5C5750] hover:text-[#14110F] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to home</span>
+        </button>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            <p className="text-sm">{error}</p>
+        {/* Login Card */}
+        <div className="rounded-[10px] bg-[#F1F0EA] border border-[#D3D1C8] p-8 shadow-sm">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="w-12 h-12 rounded-[8px] bg-[#14110F] flex items-center justify-center">
+              <svg viewBox="0 0 160 160" className="w-6 h-6">
+                <path
+                  d="M56 36H104A22 22 0 0 1 126 58V88A22 22 0 0 1 104 110H72L50 132V110H56A22 22 0 0 1 34 88V58A22 22 0 0 1 56 36Z"
+                  fill="#FFF"
+                />
+                <polyline
+                  points="57,74 73,89 104,57"
+                  fill="none"
+                  stroke="#14110F"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="124" cy="38" r="14" fill="#10A36B" stroke="#14110F" strokeWidth="4" />
+              </svg>
+            </div>
           </div>
-        )}
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div className="space-y-4">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold text-[#14110F] mb-2">Welcome Back</h2>
+            <p className="text-sm text-[#5C5750]">
+              Sign in to manage your inventory
+            </p>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 rounded-[8px] bg-red-50 border border-red-200">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-[#14110F] mb-1.5">
                 Email Address
               </label>
               <input
@@ -70,14 +102,14 @@ export default function LoginPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 rounded-[8px] border border-[#D3D1C8] bg-white text-[#14110F] placeholder-[#5C5750] focus:outline-none focus:ring-2 focus:ring-[#10A36B] focus:border-transparent transition-all"
                 placeholder="you@example.com"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-[#14110F] mb-1.5">
                 Password
               </label>
               <input
@@ -87,34 +119,48 @@ export default function LoginPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 rounded-[8px] border border-[#D3D1C8] bg-white text-[#14110F] placeholder-[#5C5750] focus:outline-none focus:ring-2 focus:ring-[#10A36B] focus:border-transparent transition-all"
                 placeholder="••••••••"
               />
             </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-[10px] bg-[#14110F] hover:bg-black text-[#F1F0EA] text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm group"
+            >
+              {loading ? (
+                <span>Signing in...</span>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Demo Hint */}
+          <div className="mt-4 p-3 rounded-[8px] bg-white/50 border border-[#D3D1C8]">
+            <p className="text-xs text-[#5C5750] text-center">
+              <span className="font-semibold text-[#14110F]">Demo:</span> demo@resolva.com / demo123
+            </p>
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-
           {/* Register Link */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mt-6 text-center">
+            <p className="text-sm text-[#5C5750]">
               Don't have an account?{' '}
               <Link
                 to="/register"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className="font-semibold text-[#14110F] hover:text-[#10A36B] transition-colors"
               >
                 Create one
               </Link>
             </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
