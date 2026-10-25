@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/authApi';
 import { ArrowLeft, LogIn } from 'lucide-react';
+import ResolvaLogo from '../components/common/ResolvaLogo';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -55,21 +56,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <div className="w-12 h-12 rounded-[8px] bg-[#14110F] flex items-center justify-center">
-              <svg viewBox="0 0 160 160" className="w-6 h-6">
-                <path
-                  d="M56 36H104A22 22 0 0 1 126 58V88A22 22 0 0 1 104 110H72L50 132V110H56A22 22 0 0 1 34 88V58A22 22 0 0 1 56 36Z"
-                  fill="#FFF"
-                />
-                <polyline
-                  points="57,74 73,89 104,57"
-                  fill="none"
-                  stroke="#14110F"
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="124" cy="38" r="14" fill="#10A36B" stroke="#14110F" strokeWidth="4" />
-              </svg>
+              <ResolvaLogo className="w-8 h-8" />
             </div>
           </div>
 

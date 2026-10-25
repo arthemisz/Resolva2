@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { Send, Sparkles, AlertTriangle, CheckCircle2, Bot, User, Check, X, Loader2, Trash2 } from 'lucide-react';
+import { Send, AlertTriangle, CheckCircle2, User, Check, X, Loader2, Trash2 } from 'lucide-react';
+import ResolvaLogo from '../common/ResolvaLogo';
 
 const formatQuantity = (quantity, unit) => {
   if (quantity === 1 || unit.endsWith('s')) return `${quantity} ${unit}`;
@@ -38,7 +39,7 @@ export default function InventoryChatStage({
       <div className="p-3.5 border-b border-[#E5E3DC] bg-[#FAF9F6] flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-[6px] bg-[#14110F] flex items-center justify-center text-white">
-            <Sparkles className="w-3.5 h-3.5 text-[#10A36B]" />
+            <ResolvaLogo className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-xs font-semibold text-[#14110F]">Autonomous Inventory Copilot</h3>
@@ -86,7 +87,7 @@ export default function InventoryChatStage({
           >
             {m.role !== 'user' && (
               <div className="w-6 h-6 rounded-[6px] bg-[#14110F] text-white flex items-center justify-center shrink-0 mt-0.5">
-                <Bot className="w-3.5 h-3.5 text-[#10A36B]" />
+                <ResolvaLogo className="w-4 h-4" />
               </div>
             )}
 

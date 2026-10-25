@@ -4,6 +4,7 @@ import { ArrowDown, RotateCcw, ChevronDown, Check, LogOut } from 'lucide-react';
 import { useTickets } from '../../context/TicketContext';
 import { scrollToSection, scrollToBottom, scrollToTop } from '../../utils/scroll';
 import { isAuthenticated, logout } from '../../services/authApi';
+import ResolvaLogo from './ResolvaLogo';
 
 const NAV_ITEMS = [
   { id: 'hero', label: 'Overview' },
@@ -55,7 +56,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#E5E3DC] bg-white/95 backdrop-blur-md px-4 sm:px-8 flex flex-col shrink-0">
+    <header className="sticky top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_4px_30px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.8)] px-4 sm:px-8 flex flex-col shrink-0">
       <div className="h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <button
@@ -63,23 +64,9 @@ export default function Navbar() {
             className="flex items-center gap-2.5 text-left cursor-pointer group"
           >
             <div className="w-6 h-6 rounded-[6px] bg-[#14110F] flex items-center justify-center transition-transform group-hover:scale-105">
-              <svg viewBox="0 0 160 160" className="w-3.5 h-3.5">
-                <path
-                  d="M56 36H104A22 22 0 0 1 126 58V88A22 22 0 0 1 104 110H72L50 132V110H56A22 22 0 0 1 34 88V58A22 22 0 0 1 56 36Z"
-                  fill="#FFF"
-                />
-                <polyline
-                  points="57,74 73,89 104,57"
-                  fill="none"
-                  stroke="#14110F"
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="124" cy="38" r="14" fill="#10A36B" stroke="#14110F" strokeWidth="4" />
-              </svg>
+              <ResolvaLogo className="w-4 h-4" />
             </div>
-            <span className="font-bold text-lg tracking-tight text-[#14110F]">resolva</span>
+            <span className="font-bold text-lg tracking-tight text-[#14110F]">Resolva</span>
             <span className="hidden sm:inline text-xs font-mono text-[#5C5750]">v2.4</span>
           </button>
 
