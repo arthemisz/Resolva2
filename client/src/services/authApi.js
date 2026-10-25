@@ -83,7 +83,9 @@ export const login = async ({ email, password }) => {
  */
 export const logout = () => {
   removeAuthToken();
-  window.location.href = '/login';
+  // Return true to indicate successful logout
+  // Caller should handle navigation
+  return true;
 };
 
 /**
