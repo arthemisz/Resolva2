@@ -9,11 +9,11 @@ export default function FaqSection() {
     <section id="faq" className="py-16 border-t border-[#E5E3DC] px-4 sm:px-8 max-w-3xl mx-auto w-full space-y-6">
       <div className="text-center space-y-2">
         <span className="text-xs font-mono uppercase tracking-wider text-[#5C5750] block">
-          Knowledge & Architecture
+          Help & Support
         </span>
         <h2 className="text-3xl font-bold text-[#14110F]">Frequently asked questions</h2>
         <p className="text-xs sm:text-sm text-[#5C5750]">
-          Common questions about how Resolva evaluates policies, prevents hallucinations, and fits enterprise workflows.
+          Common questions about how Resolva helps you manage inventory with natural language AI.
         </p>
       </div>
 
