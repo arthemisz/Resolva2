@@ -6,6 +6,7 @@ import Footer from './components/common/Footer';
 import Toast from './components/common/Toast';
 import FloatingScrollButton from './components/common/FloatingScrollButton';
 import HomePage from './pages/HomePage';
+import DashboardPage from './pages/DashboardPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -36,18 +37,25 @@ export default function App() {
             <Routes>
               {/* Public landing page */}
               <Route path="/" element={
-                isAuthenticated() ? <Navigate to="/home" replace /> : <LandingPage />
+                isAuthenticated() ? <Navigate to="/dashboard" replace /> : <LandingPage />
               } />
 
               {/* Auth routes */}
               <Route path="/login" element={
-                isAuthenticated() ? <Navigate to="/home" replace /> : <LoginPage />
+                isAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginPage />
               } />
               <Route path="/register" element={
-                isAuthenticated() ? <Navigate to="/home" replace /> : <RegisterPage />
+                isAuthenticated() ? <Navigate to="/dashboard" replace /> : <RegisterPage />
               } />
 
               {/* Protected routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              } />
+              
+              {/* Full HomePage with all sections (optional - for marketing/docs) */}
               <Route path="/home" element={
                 <ProtectedRoute>
                   <HomePage />
@@ -84,9 +92,9 @@ export default function App() {
                 </ProtectedRoute>
               } />
 
-              {/* Catch all - redirect to home or landing */}
+              {/* Catch all - redirect to dashboard or landing */}
               <Route path="*" element={
-                isAuthenticated() ? <Navigate to="/home" replace /> : <Navigate to="/" replace />
+                isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Navigate to="/" replace />
               } />
             </Routes>
           </main>

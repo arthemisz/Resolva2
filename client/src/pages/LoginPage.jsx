@@ -29,8 +29,8 @@ export default function LoginPage() {
       const response = await login(formData);
       console.log('Login successful:', response);
       
-      // Redirect to home page
-      navigate('/');
+      // Redirect to dashboard
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
     } finally {
