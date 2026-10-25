@@ -1,6 +1,6 @@
+import './config/env.js';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import { Product } from './models/Product.js';
 import { Transaction } from './models/Transaction.js';
@@ -9,8 +9,6 @@ import { processAgentChat } from './services/agent.js';
 import { createProduct, findProducts, recordTransaction } from './services/tools.js';
 import authRoutes from './routes/authRoutes.js';
 import { authenticate } from './middleware/auth.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
